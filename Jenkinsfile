@@ -11,12 +11,12 @@ node {
     stage('Checkout') {
         checkout scm
     }
-    stage('Setup Maven') {
-        // Get the installed Maven path by tool name
-        def mvnHome = tool name: 'Default', type: 'hudson.tasks.Maven$MavenInstallation'
-        env.PATH = "${mvnHome}/bin:${env.PATH}"
-        echo "Using Maven at: ${mvnHome}"
-    }
+    // stage('Setup Maven') {
+    //     // Get the installed Maven path by tool name
+    //     def mvnHome = tool name: 'Default', type: 'hudson.tasks.Maven$MavenInstallation'
+    //     env.PATH = "${mvnHome}/bin:${env.PATH}"
+    //     echo "Using Maven at: ${mvnHome}"
+    // }
 
 
     stage('Build') {
@@ -44,7 +44,7 @@ node {
 
     stage('Copy files to Docker Host') {
         withCredentials([sshUserPrivateKey(credentialsId: 'ec2-user', keyFileVariable: 'KEY', usernameVariable: 'USERNAME')]) {
-            withCredentials([string(credentialsId: 'aws_server', variable: 'AGENT_HOST')]) {
+            withCredentials([string(credentialsId: 'aws_server_akshay', variable: 'AGENT_HOST')]) {
                 sh '''
                     scp -i ${KEY} -o StrictHostKeyChecking=no  rates.csv Dockerfile target/forex-app-1.0.0.jar rates.csv ec2-user@${AGENT_HOST}:/tmp/workspace/pipeline/
                 '''
@@ -53,7 +53,7 @@ node {
     }
 
     stage('Docker Build & Run') {
-        node('agent01') {
+        node('aws_Akshay') {
             sh '''
               cd /tmp/workspace/pipeline/
               sudo docker build -t forex-app .
